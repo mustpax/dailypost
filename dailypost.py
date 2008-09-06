@@ -368,9 +368,9 @@ def getOptionParser():
   parser.set_defaults(mode='add')
   parser.add_option('-a', action='store_const', dest='mode', const='add', \
                     help='add new MOTD entry [default]')
-  parser.add_option('-d', action='store_const', dest='mode', const='delete', \
+  parser.add_option('-e', action='store_const', dest='mode', const='delete', \
                     help='edit old MOTD entry')
-  parser.add_option('-e', action='store_const', dest='mode', const='edit', \
+  parser.add_option('-d', action='store_const', dest='mode', const='edit', \
                     help='delete old MOTD entry')
   parser.add_option('-n', action='store_const', dest='mode', const='none', \
                     help='do not modify any entries, just update MOTD file')
