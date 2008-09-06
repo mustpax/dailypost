@@ -280,7 +280,8 @@ class Archive:
     Write the latest 'num' entries to the given output file handle.
     Adds a footer indicating last modified date. Normally used to populate the motd file.
     """
-    output.write(Config['motdHeader'].safe_substitute(update_date=formatDate(date.today())))
+    if (Config['motdHeader'] is not None):
+      output.write(Config['motdHeader'].substitute(update_date=formatDate(date.today())))
     i=0
     ret=[]
     for entry in self.walkEntries():
@@ -294,7 +295,8 @@ class Archive:
       #output.write(Config['entrySeperator'])
       i+=1
     output.write(Config['entrySeperator'].join(ret))
-    # TODO footer
+    if (Config['motdFooter'] is not None):
+      output.write(Config['motdFooter'].substitute(update_date=formatDate(date.today())))
 
   def walkEntries(self, dir=None):
     "Returns a generator that returns paths to entry files. Walks newest entries first."

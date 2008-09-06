@@ -12,7 +12,8 @@ Config['archiveDir'] = 'motd_archive/' # Makes sense to create a directory under
 #Config['entrySeperator'] = '\n\n'
 Config['entrySeperator'] = '                              ====================                              \n' # This seperates entries in the combined motd file
 # For the MOTD_HEADER: only $update_date and $update_user are allowed in the Template
-Config['motdHeader'] = string.Template('Last updated $update_date\n')
+Config['motdHeader'] = None
+Config['motdFooter'] = string.Template('Last updated $update_date\n')
 Config['dateFormat'] = '$month/$day/$year' # String template with only three variables: $day, $month, $year
 Config['dateRegex'] = re.compile(r'^(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<year>\d{4})$')
 Config['lineLength'] = 80
