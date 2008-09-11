@@ -485,9 +485,9 @@ def main():
   if (options.update):
     if options.motdToStdout:
       arc.writeLatest()
-    elif confirm('Overwrite old MOTD file "%s"?' % Config['motdFile']):
+    elif (not os.path.exists(Config['motdFile'])) or \
+         confirm('Overwrite old MOTD file "%s"?' % Config['motdFile']):
       print 'Writing new MOTD file.',
-      # TODO overwrite warning
       motdfile = open(Config['motdFile'], 'w')
       arc.writeLatest(motdfile)
       print 'Done.'
