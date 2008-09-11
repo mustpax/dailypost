@@ -10,12 +10,47 @@ from datetime import date, timedelta
 from textwrap import TextWrapper
 from tempfile import NamedTemporaryFile
 from optparse import OptionParser
-from config import Config
 import readline, re, os, sys, string, subprocess
+
+# CONFIGURATION ================================================================
+# Default configuration. TODO: read overrides from config file.
+Config={}
+Config['defaultEditor'] = 'vim' # FTW!
+Config['shownEntries'] = 3 # Last X entries shown in the MOTD file
+Config['motdFile'] = 'motd' # Usually /etc/motd
+Config['archiveDir'] = 'motd_archive/' # Makes sense to create a directory under /etc/ for this too
+#Config['entrySeperator'] = '\n\n'
+Config['entrySeperator'] = '                              ====================                              \n' # This seperates entries in the combined motd file
+# Header and footer can contain the parameter $update_date . Set to None to completely omit header/footer.
+Config['motdHeader'] = 'Non-empty header'
+Config['motdFooter'] = 'Last updated $update_date'
+Config['dateFormat'] = '$month/$day/$year' # String template with only three variables: $day, $month, $year
+Config['dateRegex'] = re.compile(r'^(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<year>\d{4})$')
+Config['lineLength'] = 80
+Config['headerIndent'] = 4
+Config['bodyIndent'] = 10
+Config['footerRightIndent'] = 20
+# Each list element goes to new line
+Config['sig'] = ['Staff']
+Config['alwaysYes'] = False # Do not display confirmation dialogues, destroy data with impunity.
+Config['debugMode'] = False # Be more verbose with errors and such.
+# ==============================================================================
 
 # CONSTANTS
 EMPTY_REGEX=re.compile(r'^\s*$')
 Config['dateTemplate'] = string.Template(Config['dateFormat'])
+
+if (Config['motdHeader'] is None):
+  Config['headerTemplate'] = None
+else:
+  Config['headerTemplate'] = string.Template(Config['motdHeader'])
+
+if (Config['motdFooter'] is None):
+  Config['footerTemplate'] = None
+else:
+  Config['footerTemplate'] = string.Template(Config['motdFooter'])
+
+
 
 def gimmeRoom(n):
   "Return string with n space characters."
@@ -247,8 +282,9 @@ class Archive:
     if os.path.commonprefix([realfile, bydatedir]) != bydatedir:
       error(ValueError, 'Entry %d is corrupted, cannot delete.' % id)
 
-    os.unlink(idlink)
-    os.unlink(realfile)
+    if (confirm("Really delete entry %d?" % id)):
+      os.unlink(idlink)
+      os.unlink(realfile)
 
   def saveEntry(self, entryId, entry):
     targetfile = self.__getDateFile(entryId, entry.getDate())
@@ -280,8 +316,9 @@ class Archive:
     Write the latest 'num' entries to the given output file handle.
     Adds a footer indicating last modified date. Normally used to populate the motd file.
     """
-    if (Config['motdHeader'] is not None):
-      output.write(Config['motdHeader'].substitute(update_date=formatDate(date.today())))
+    if (Config['headerTemplate'] is not None):
+      output.write(Config['headerTemplate'].substitute(update_date=formatDate(date.today())))
+      output.write("\n")
     i=0
     ret=[]
     for entry in self.walkEntries():
@@ -289,14 +326,13 @@ class Archive:
         break
       assert os.path.isfile(entry)
       fd = open(entry, 'r')
-      #output.write(str(Entry.getFromFile(fd)))
       ret.append(str(Entry.getFromFile(fd)))
       fd.close()
-      #output.write(Config['entrySeperator'])
       i+=1
     output.write(Config['entrySeperator'].join(ret))
-    if (Config['motdFooter'] is not None):
-      output.write(Config['motdFooter'].substitute(update_date=formatDate(date.today())))
+    if (Config['footerTemplate'] is not None):
+      output.write(Config['footerTemplate'].substitute(update_date=formatDate(date.today())))
+      output.write('\n')
 
   def walkEntries(self, dir=None):
     "Returns a generator that returns paths to entry files. Walks newest entries first."
@@ -370,9 +406,9 @@ def getOptionParser():
   parser.set_defaults(mode='add')
   parser.add_option('-a', action='store_const', dest='mode', const='add', \
                     help='add new MOTD entry [default]')
-  parser.add_option('-e', action='store_const', dest='mode', const='delete', \
+  parser.add_option('-d', action='store_const', dest='mode', const='delete', \
                     help='edit old MOTD entry')
-  parser.add_option('-d', action='store_const', dest='mode', const='edit', \
+  parser.add_option('-e', action='store_const', dest='mode', const='edit', \
                     help='delete old MOTD entry')
   parser.add_option('-n', action='store_const', dest='mode', const='none', \
                     help='do not modify any entries, just update MOTD file')

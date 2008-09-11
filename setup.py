@@ -7,6 +7,5 @@ setup(name="dailypost",
       description="Manage MOTD entries and keep your MOTD looking fine.",
       author="Mustafa Paksoy",
       url="https://github.com/mustpax/dailypost",
-      py_modules=["config"],
       scripts=["dailypost.py"])
 
