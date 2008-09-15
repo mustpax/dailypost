@@ -50,14 +50,9 @@ if (Config['motdFooter'] is None):
 else:
   Config['footerTemplate'] = string.Template(Config['motdFooter'])
 
-
-
 def gimmeRoom(n):
   "Return string with n space characters."
-  ret=[]
-  for i in range(n):
-    ret.append(' ')
-  return ''.join(ret)
+  return n*' '
 
 def formatDate(date):
   "Return formatted string for given datetime.date object"
