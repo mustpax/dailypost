@@ -332,18 +332,16 @@ class Archive:
   def walkEntries(self, dir=None):
     "Returns a generator that returns paths to entry files. Walks newest entries first."
     if dir is None:
-      for path in self.walkEntries(self.__bydate):
-        yield path
-    else:
-      rootfiles = os.listdir(dir)
-      if len(rootfiles) > 0:
-        rootfiles.sort(cmp=(lambda x,y: int(y)-int(x)))
-        for file in rootfiles:
-          if re.match(Archive.FILE_REGEX, file):
-            yield os.path.join(dir,file)
-          else:
-            for subfile in self.walkEntries(os.path.join(dir,file)):
-              yield subfile
+      dir = self.__bydate
+    rootfiles = os.listdir(dir)
+    if len(rootfiles) > 0:
+      rootfiles.sort(cmp=(lambda x,y: int(y)-int(x)))
+      for file in rootfiles:
+        if re.match(Archive.FILE_REGEX, file):
+          yield os.path.join(dir,file)
+        else:
+          for subfile in self.walkEntries(os.path.join(dir,file)):
+            yield subfile
 
   def hasId(self, entryid):
     "Returns true if entry with given id number exists."
