@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 from distutils.core import setup
 
@@ -8,4 +8,3 @@ setup(name="dailypost",
       author="Mustafa Paksoy",
       url="https://github.com/mustpax/dailypost",
       scripts=["dailypost.py"])
-

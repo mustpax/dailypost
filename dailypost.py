@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 A blog style MOTD entry manager. dailypost allows you to add/edit/remove
 individual entries to your MOTD file without the manual editing hassle.
