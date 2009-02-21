@@ -1,10 +1,16 @@
 #!/usr/bin/python
 """
-MOTD entry manager v0.2.
-Mustafa Paksoy. March 2008.
+A blog style MOTD entry manager. dailypost allows you to add/edit/remove
+individual entries to your MOTD file without the manual editing hassle.
+
+Release under the MIT license. See file LICENSE in the root project directory
+for full license text.
 """
 
-# TODO remove empty date directories
+__author__ = 'Mustafa Paksoy'
+__version__ = '0.2'
+__copyright__ = 'Copyright (c) 2008-2009 Mustafa Paksoy'
+__license__ = 'MIT'
 
 from datetime import date, timedelta
 from textwrap import TextWrapper
@@ -27,7 +33,7 @@ Config['motdFooter'] = 'Last updated $update_date'
 Config['dateFormat'] = '$month/$day/$year' # String template with only three variables: $day, $month, $year
 Config['dateRegex'] = re.compile(r'^(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<year>\d{4})$')
 Config['lineLength'] = 80
-Config['headerIndent'] = 4
+Config['headerIndent'] = 0
 Config['bodyIndent'] = 10
 Config['footerRightIndent'] = 20
 # Each list element goes to new line
@@ -176,17 +182,21 @@ class Entry:
     newTmpEntry.close()
     tmpEntry.close()
     return text
+
+  def getTitle(self):
+    return self.__title
   
   def __getHeader(self):
     ret=[]
     date = formatDate(self.__date)
+    idmarker=("(Entry %d)" % 77)
     # apply indent on both sides, 2 center
-    headerlen = Config['lineLength'] - 2 - 2 * Config['headerIndent']
+    headerlen = Config['lineLength'] - 2 * Config['headerIndent'] - len(idmarker)
     textlength = len(self.__title) + len(date)
     ret.append(gimmeRoom(Config['headerIndent']))
     ret.append(self.__title)
     ret.append(gimmeRoom((headerlen - textlength)/2))
-    ret.append("::")
+    ret.append(idmarker)
     ret.append(gimmeRoom((headerlen - textlength)/2))
     ret.append(date)
     return ''.join(ret)
@@ -261,8 +271,10 @@ class Archive:
     link = open(self.__getIdFile(id), 'r')
     entry = Entry.getFromFile(link)
     link.close()
+    print ("Editing entry %d with title \"%s\"" % (id, entry.getTitle()))
     entry.updateFromUser()
     self.saveEntry(id, entry)
+    return True
 
   def delete(self, id):
     if not self.hasId(id):
@@ -280,6 +292,10 @@ class Archive:
     if (confirm("Really delete entry %d?" % id)):
       os.unlink(idlink)
       os.unlink(realfile)
+      print 'Deleted entry %d' % id
+      return True
+    print 'Aborted.'
+    return False
 
   def saveEntry(self, entryId, entry):
     targetfile = self.__getDateFile(entryId, entry.getDate())
@@ -458,24 +474,23 @@ def main():
   Config['debugMode'] = options.debugMode
   Config['alwaysYes'] = options.alwaysYes
 
+  modified=True
   if (mode == 'add'):
     entry = Entry.getNewFromUser()
     print 'Saved new entry %d.' % arc.add(entry)
   elif (mode == 'delete'):
     entryid = getid(args)
-    arc.delete(entryid)
-    print 'Entry %d permanently deleted.' % entryid
+    modified=arc.delete(entryid)
   elif (mode == 'edit'):
     entryid = getid(args)
-    print 'Editing entry %d.' % entryid
     arc.update(entryid)
-    print 'Entry %d saved.' % entryid
   elif (mode == 'none'):
     pass
   else:
+    modified=False
     error(ValueError, 'Invalid edit mode: ' + mode)
 
-  if (options.update):
+  if (modified and options.update):
     if options.motdToStdout:
       arc.writeLatest()
     elif (not os.path.exists(Config['motdFile'])) or \
