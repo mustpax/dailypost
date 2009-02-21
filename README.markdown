@@ -36,3 +36,7 @@ storing archived entries. It's just plain-text. (Although, you have to use
 dailypost if you want to edit these entries.) Remember that time when we had
 the power outage and the UPS started blowing out black smoke? Just grep your
 motd archive it will come right up.
+
+## License
+
+Released under the MIT License. See LICENSE for full text.
